@@ -6,9 +6,18 @@
 	</informationNeed>
 	<informationNeed>
 		<identifier>2</identifier>
-		<text>¿Qué sabemos de las redes neuronales convolucionales? Quiero aprender la teoría, pero también ejemplos de sectores donde se aplican esas redes.</text>
+		<text>¿Qué sabemos de las redes neuronales convolucionales? Quiero aprender la teoría, pero también quiero conocer ejemplos de sectores donde se aplican estas redes.</text>
 	</informationNeed>
 	<informationNeed>
 		<identifier>3</identifier>
-		<text>¿Cómo la inteligencia emocional actúa en nuestras vidas y en las decisiones que tomamos?</text>
+		<text>¿Cómo actúa la inteligencia emocional en nuestras vidas y en las decisiones que tomamos?</text>
 	</informationNeed>
+	<informationNeed>
+		<identifier>4</identifier>
+		<text>Me gustaría saber más acerca de la situación actual del mercado español.</text>
+	</informationNeed>
+	<informationNeed>
+		<identifier>5</identifier>
+		<text>¿Qué es la cerámica “terra sigillata hispánica”? ¿Cuándo y dónde apareció?</text>
+	</informationNeed>
+</informationNeeds>
