@@ -33,6 +33,8 @@ public class SearchFiles {
 
 	    String index = "index";
 	    String field = "contents";
+	    String infoNeeds = null;
+	    String output = null;
 	    String queries = null;
 	    int repeat = 0;
 	    boolean raw = false;
@@ -43,6 +45,12 @@ public class SearchFiles {
 	      if ("-index".equals(args[i])) {
 	        index = args[i+1];
 	        i++;
+	      } else if ("-infoNeeds".equals(args[i])) {
+	    	infoNeeds = args[i+1];
+	    	i++;
+	      } else if ("-output".equals(args[i])) {
+	    	output = args[i+1];
+	    	i++;
 	      } else if ("-field".equals(args[i])) {
 	        field = args[i+1];
 	        i++;
@@ -65,6 +73,15 @@ public class SearchFiles {
 	        }
 	        i++;
 	      }
+	    }
+	    
+	    if (infoNeeds == null) {
+	    	System.err.println("Must provide infoNeeds file with -infoNeeds");
+		    System.exit(1);
+	    }
+	    if (output == null) {
+	    	System.err.println("Must provide output file with -output");
+		    System.exit(1);
 	    }
 	    
 	    IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(index)));
