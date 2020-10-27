@@ -1,11 +1,19 @@
 package org.apache.lucene.demo;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Date;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.demo.SpanishAnalyzer2;
@@ -83,6 +91,42 @@ public class SearchFiles {
 	    	System.err.println("Must provide output file with -output");
 		    System.exit(1);
 	    }
+	    
+	    System.out.println("PARSING XML INFONEEDS");
+	    
+	    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+
+        // Load the input XML document, parse it and return an instance of the
+        // Document class.
+        org.w3c.dom.Document document = builder.parse(new File(infoNeeds));
+        NodeList nodeList = document.getDocumentElement().getChildNodes();
+        
+        ArrayList<String> informationNeeds = new ArrayList<String> ();
+        
+        
+        for (int i = 0; i < nodeList.getLength(); i++) {
+            Node node = nodeList.item(i);
+
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                 Element elem = (Element) node;
+
+  
+                 // Get the value of all sub-elements.
+                 String identifier = elem.getElementsByTagName("identifier")
+                                     .item(0).getChildNodes().item(0).getNodeValue();
+
+                 String text = elem.getElementsByTagName("text").item(0)
+                                     .getChildNodes().item(0).getNodeValue();
+
+
+                 System.out.println("ID: " + identifier + ", text: " + text);
+                 
+                 informationNeeds.add(text);
+                 
+            }
+       }
+        
 	    
 	    IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(index)));
 	    IndexSearcher searcher = new IndexSearcher(reader);

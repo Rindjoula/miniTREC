@@ -39,7 +39,8 @@ import java.util.Date;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.soap.Node;
+//import javax.xml.soap.Node;
+import org.w3c.dom.Node;
 
 /** Index all text files under a directory.
  * <p>
