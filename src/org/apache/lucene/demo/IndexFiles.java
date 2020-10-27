@@ -229,6 +229,22 @@ private IndexFiles() {}
 	        	  doc.add(new TextField("creator", creator, Field.Store.YES));
 	          }
 	          
+	          String[] contributors = doc.getValues("dc:contributor");
+	          for (int i=0; i<contributors.length; i++) {
+	        	  String contributor = contributors[i];
+	        	  doc.add(new TextField("contributor", contributor, Field.Store.YES));
+	          } 
+	          
+	          String relation = doc.get("relation");
+	          if (relation != null) {
+	        	  doc.add(new TextField("relation", relation, Field.Store.YES));
+	          }
+	          
+	          String rights = doc.get("rights");
+	          if (rights != null) {
+	        	  doc.add(new TextField("rights", rights, Field.Store.YES));
+	          }
+	          
 	          String publisher = doc.get("dc:publisher");
 	          if (publisher != null) {
 	        	  doc.add(new TextField("publisher", publisher, Field.Store.YES));
