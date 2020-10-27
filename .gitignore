@@ -2,3 +2,4 @@
 recordsdc/
 lucene-*
 index*
+.classpath
