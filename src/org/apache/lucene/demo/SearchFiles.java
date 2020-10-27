@@ -3,11 +3,13 @@ package org.apache.lucene.demo;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Paths;
 import java.util.Date;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.demo.SpanishAnalyzer2;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
@@ -18,6 +20,11 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
+import org.glassfish.jersey.internal.util.Tokenizer;
+
+import opennlp.tools.namefind.NameFinderME;
+import opennlp.tools.namefind.TokenNameFinderModel;
+import opennlp.tools.util.Span;
 
 public class SearchFiles {
 	private SearchFiles() {}
@@ -83,36 +90,34 @@ public class SearchFiles {
 	        System.out.println("Enter query: ");
 	      }
 
-	      String line = queryString != null ? queryString : in.readLine();
-
-	      if (line == null || line.length() == -1) {
-	        break;
-	      }
-
-	      line = line.trim();
-	      if (line.length() == 0) {
-	        break;
-	      }
+	      // todo: change for the XML queries
+	      String query_string = "title:Análisis de la evolucion económica de España desde la crisis de 2008 hasta 2019 en relacion con los diferentes partidos politicos que han gobernado el país durante este periodo o con cualquier otro aspecto de relevancia social."
+	    		  	+ " " + "subject:Análisis de la evolucion económica de España desde la crisis de 2008 hasta 2019 en relacion con los diferentes partidos politicos que han gobernado el país durante este periodo o con cualquier otro aspecto de relevancia social.";
 	      
-	      Query query = parser.parse(line);
+	      
+	      //String query_string = "title:evolucion";
+	      System.out.println(query_string);
+	            
+	      Query query = parser.parse(query_string);
+	      System.out.println(query.toString());
 	      System.out.println("Searching for: " + query.toString(field));
 	            
-	      if (repeat > 0) {                           // repeat & time as benchmark
+	      /*if (repeat > 0) {                           // repeat & time as benchmark
 	        Date start = new Date();
 	        for (int i = 0; i < repeat; i++) {
 	          searcher.search(query, 100);
 	        }
 	        Date end = new Date();
 	        System.out.println("Time: "+(end.getTime()-start.getTime())+"ms");
-	      }
+	      }*/
 
 	      doPagingSearch(in, searcher, query, hitsPerPage, raw, queries == null && queryString == null);
-
-	      if (queryString != null) {
+	      break;
+	      /*if (queryString != null) {
 	        break;
-	      }
+	      }*/
 	    }
-	    reader.close();
+	    //reader.close();
 	  }
 
 	  /**
