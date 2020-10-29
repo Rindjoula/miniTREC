@@ -11,7 +11,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Calendar;
+import java.util.ArrayList;
 import java.util.Date;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
@@ -45,6 +52,8 @@ public class SearchFiles {
 
 	    String index = "index";
 	    String field = "contents";
+	    String infoNeeds = null;
+	    String output = null;
 	    String queries = null;
 	    
 	    /** Creation of the file and directory results **/
@@ -77,6 +86,12 @@ public class SearchFiles {
 	      if ("-index".equals(args[i])) {
 	        index = args[i+1];
 	        i++;
+	      } else if ("-infoNeeds".equals(args[i])) {
+	    	infoNeeds = args[i+1];
+	    	i++;
+	      } else if ("-output".equals(args[i])) {
+	    	output = args[i+1];
+	    	i++;
 	      } else if ("-field".equals(args[i])) {
 	        field = args[i+1];
 	        i++;
@@ -100,6 +115,51 @@ public class SearchFiles {
 	        i++;
 	      }
 	    }
+	    
+	    if (infoNeeds == null) {
+	    	System.err.println("Must provide infoNeeds file with -infoNeeds");
+		    System.exit(1);
+	    }
+	    if (output == null) {
+	    	System.err.println("Must provide output file with -output");
+		    System.exit(1);
+	    }
+	    
+	    System.out.println("PARSING XML INFONEEDS");
+	    
+	    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+
+        // Load the input XML document, parse it and return an instance of the
+        // Document class.
+        org.w3c.dom.Document document = builder.parse(new File(infoNeeds));
+        NodeList nodeList = document.getDocumentElement().getChildNodes();
+        
+        ArrayList<String> informationNeeds = new ArrayList<String> ();
+        
+        
+        for (int i = 0; i < nodeList.getLength(); i++) {
+            Node node = nodeList.item(i);
+
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                 Element elem = (Element) node;
+
+  
+                 // Get the value of all sub-elements.
+                 String identifier = elem.getElementsByTagName("identifier")
+                                     .item(0).getChildNodes().item(0).getNodeValue();
+
+                 String text = elem.getElementsByTagName("text").item(0)
+                                     .getChildNodes().item(0).getNodeValue();
+
+
+                 System.out.println("ID: " + identifier + ", text: " + text);
+                 
+                 informationNeeds.add(text);
+                 
+            }
+       }
+        
 	    
 	    IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(index)));
 	    IndexSearcher searcher = new IndexSearcher(reader);

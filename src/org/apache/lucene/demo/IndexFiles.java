@@ -39,7 +39,8 @@ import java.util.Date;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.soap.Node;
+//import javax.xml.soap.Node;
+import org.w3c.dom.Node;
 
 /** Index all text files under a directory.
  * <p>
@@ -227,6 +228,22 @@ private IndexFiles() {}
 	          String creator = doc.get("dc:creator");
 	          if (creator != null) {
 	        	  doc.add(new TextField("creator", creator, Field.Store.YES));
+	          }
+	          
+	          String[] contributors = doc.getValues("dc:contributor");
+	          for (int i=0; i<contributors.length; i++) {
+	        	  String contributor = contributors[i];
+	        	  doc.add(new TextField("contributor", contributor, Field.Store.YES));
+	          } 
+	          
+	          String relation = doc.get("relation");
+	          if (relation != null) {
+	        	  doc.add(new TextField("relation", relation, Field.Store.YES));
+	          }
+	          
+	          String rights = doc.get("rights");
+	          if (rights != null) {
+	        	  doc.add(new TextField("rights", rights, Field.Store.YES));
 	          }
 	          
 	          String publisher = doc.get("dc:publisher");
