@@ -1,11 +1,16 @@
 package org.apache.lucene.demo;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -41,6 +46,28 @@ public class SearchFiles {
 	    String index = "index";
 	    String field = "contents";
 	    String queries = null;
+	    
+	    /** Creation of the file and directory results **/
+	    Path results_folder = Paths.get("results/");
+	    Files.createDirectory(results_folder);
+	    Date date_now = new Date(System.currentTimeMillis());
+	    Calendar calendar = Calendar.getInstance();
+	    calendar.setTime(date_now);
+	    String results_file_name = "results_" + Integer.toString(calendar.get(Calendar.YEAR))
+	    	+ Integer.toString(calendar.get(Calendar.MONTH))
+	    	+ Integer.toString(calendar.get(Calendar.DAY_OF_MONTH))
+	    	+ "_"
+	    	+ Integer.toString(calendar.get(Calendar.HOUR_OF_DAY))
+	    	+ Integer.toString(calendar.get(Calendar.MINUTE))
+	    	+ Integer.toString(calendar.get(Calendar.SECOND))
+	    	+ ".txt";
+	    
+	    File results_file = new File(results_folder.toString() + results_file_name);
+	    System.out.println("Results file name : " + results_file.toString());
+	    
+	    // TODO: replace by the number of queries of the xml_query_file
+	    Results[][] results = new Results[5][];
+	    	    
 	    int repeat = 0;
 	    boolean raw = false;
 	    String queryString = null;
@@ -85,7 +112,7 @@ public class SearchFiles {
 	      in = new BufferedReader(new InputStreamReader(System.in, "UTF-8"));
 	    }
 	    QueryParser parser = new QueryParser(field, analyzer);
-	    while (true) {
+	    for (int i=0; i<queries.length(); i++) {
 	      if (queries == null && queryString == null) {                        // prompt the user
 	        System.out.println("Enter query: ");
 	      }
@@ -110,13 +137,31 @@ public class SearchFiles {
 	        Date end = new Date();
 	        System.out.println("Time: "+(end.getTime()-start.getTime())+"ms");
 	      }*/
-
-	      doPagingSearch(in, searcher, query, hitsPerPage, raw, queries == null && queryString == null);
-	      break;
+	      
+	      // TODO: replace query_1 by id_query
+	      ObjectQuery obj_query = new ObjectQuery("query_1", query);
+	      
+	      // TODO: replace by a for loop on all the queries of xml_query_file
+	      results[0] = doPagingSearch(in, searcher, obj_query, hitsPerPage, raw, queries == null && queryString == null);
+	      
+	      //break;
 	      /*if (queryString != null) {
 	        break;
 	      }*/
 	    }
+	    
+	    /** Write on the result file all the results **/
+	    FileWriter writer = new FileWriter(results_folder.toString() + results_file_name);
+	    for (int i=0; i < results.length; i++) {
+	    	for (int j=0; j<results[i].length; j++) {
+	    		String r = results[i][j].id_query + "\t" 
+	    				+ results[i][j].id_doc;
+	    		writer.write(r);
+	    		writer.write("\n");
+	    	}
+	    	
+	    }
+	    writer.close();
 	    //reader.close();
 	  }
 
@@ -131,9 +176,10 @@ public class SearchFiles {
 	   * 
 	   * 
 	   */
-	  public static void doPagingSearch(BufferedReader in, IndexSearcher searcher, Query query, 
+	  public static Results[] doPagingSearch(BufferedReader in, IndexSearcher searcher, ObjectQuery obj_query, 
 	                                     int hitsPerPage, boolean raw, boolean interactive) throws IOException {
 
+		Query query = obj_query.query;
 	    // Collect enough docs to show 5 pages
 	    TopDocs results = searcher.search(query, 5 * hitsPerPage);
 	    ScoreDoc[] hits = results.scoreDocs;
@@ -172,6 +218,8 @@ public class SearchFiles {
 	          if(raw == false & modified != 0) {
 	        	  System.out.println("modified: " + new Date(modified));
 	          }
+	          
+	          
 	          
 	        } else {
 	          System.out.println((i+1) + ". " + "No path for this document");
@@ -225,5 +273,9 @@ public class SearchFiles {
 	        end = Math.min(numTotalHits, start + hitsPerPage);
 	      }
 	    }
+	    Results results_1 = new Results("query_1", "doc_1");
+	    Results[] results_query = new Results[numTotalHits];
+	    results_query[0] = results_1;
+	    return results_query;
 	  }
 }
