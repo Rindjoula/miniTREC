@@ -10,9 +10,13 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.Normalizer;
 import java.util.Calendar;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -27,6 +31,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.flexible.standard.parser.EscapeQuerySyntaxImpl;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -156,14 +161,57 @@ public class SearchFiles {
 
 	    QueryParser parser = new QueryParser(field, analyzer);
 	    for (ObjectQuery obj_q: informationNeeds) {
-	    	Query query = parser.parse(obj_q.text_query);
 	    	//System.out.println(query.toString());
-	    	System.out.println("Searching for: " + query.toString(field));
 	      	      
 	    	// TODO: set the argument query of obj_q --> readable by lucene, after the transformations...
 	    	// Query q = ...
 	    	// obj_q.setQuery(q);
 	    	
+	    	String text_query = obj_q.text_query.toLowerCase();
+	    	text_query = Normalizer.normalize(text_query, Normalizer.Form.NFD);
+	    	text_query = text_query.replaceAll("[^\\p{ASCII}]", "");
+	    	
+	    	String lucene_query = ""; 
+	    	if (text_query.contains("tesis") & (!text_query.contains("academico")
+	    			| text_query.contains("fin de grado"))) {
+	    		
+	    		lucene_query += "type:TESIS ";
+	    	}
+	    	if ((text_query.contains("academico") | text_query.contains("fin de grado"))
+	    			& (!text_query.contains("tesis"))) {
+	    		
+	    		lucene_query += "type:TAZ* ";
+	    	}
+	    	
+	    	LinkedList<String> numbers = new LinkedList<String>();
+	    	
+	    	Pattern p = Pattern.compile("\\d+");
+	    	Matcher m = p.matcher(text_query);
+	    	
+	    	while(m.find()) {
+	    		numbers.add(m.group());
+	    	}
+	    	
+	    	if (numbers.size() == 2) {
+	    		lucene_query += "date:[" + numbers.get(0) + " TO " + numbers.get(1) + "] ";
+	    	}
+	    	
+	    	System.out.println(numbers);
+	    	
+	    	String[] text_list = text_query.split("\\s+|(?=\\p{Punct})|(?<=\\p{Punct})");
+	    	
+	    	for (String word: text_list) {
+	    		if (word.matches("[a-z]+")) {
+	    			lucene_query += "description:" + word + " ";
+	    		}
+	    	}
+	    	
+	    	//lucene_query += "description:" + text_query + " ";
+	    	
+	    	System.out.println(lucene_query);
+	    	
+	    	Query q = parser.parse(lucene_query);
+	    	obj_q.setQuery(q);
 	    	
 	    	// TODO: replace by a for loop on all the queries of xml_query_file
 	    	results.add(doPagingSearch(in, searcher, obj_q, hitsPerPage, raw, queries == null && queryString == null));
@@ -209,11 +257,12 @@ public class SearchFiles {
 		  ScoreDoc[] hits = results.scoreDocs;
 	    
 		  int numTotalHits = Math.toIntExact(results.totalHits.value);
+		  int end = Math.min(hits.length, 5 * hitsPerPage);
 		  System.out.println(numTotalHits + " total matching documents");
 	    
 		  ArrayList<Results> results_query = new ArrayList<Results>();
 	    
-		  for (int i=0; i<numTotalHits; i++) {
+		  for (int i=0; i<end; i++) {
 
 			  Document doc = searcher.doc(hits[i].doc);
 		      String path = doc.get("path");
