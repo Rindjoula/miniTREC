@@ -4,3 +4,4 @@ lucene-*
 index*
 apache-opennlp-*
 .classpath
+results.txt
