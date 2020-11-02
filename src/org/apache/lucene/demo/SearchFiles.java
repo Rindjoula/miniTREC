@@ -2,18 +2,12 @@ package org.apache.lucene.demo;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.Normalizer;
-import java.util.Calendar;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,19 +19,16 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.demo.SpanishAnalyzer2;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.queryparser.flexible.standard.parser.EscapeQuerySyntaxImpl;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
-import org.glassfish.jersey.internal.util.Tokenizer;
 
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.TokenNameFinderModel;
@@ -61,10 +52,9 @@ public class SearchFiles {
 	    String output = null;
 	    String queries = null;
 	    	    
-	    int repeat = 0;
 	    boolean raw = false;
 	    String queryString = null;
-	    int hitsPerPage = 10;
+	    int maxHits = 20; 
 	    
 	    BufferedReader in = new BufferedReader(new InputStreamReader(System.in, "UTF-8"));
 	    
@@ -79,27 +69,6 @@ public class SearchFiles {
 	      } else if ("-output".equals(args[i])) {
 	    	  output = args[i+1];
 	    	  i++;
-	      } else if ("-field".equals(args[i])) {
-	        field = args[i+1];
-	        i++;
-	      } else if ("-queries".equals(args[i])) {
-	        queries = args[i+1];
-	        i++;
-	      } else if ("-query".equals(args[i])) {
-	        queryString = args[i+1];
-	        i++;
-	      } else if ("-repeat".equals(args[i])) {
-	        repeat = Integer.parseInt(args[i+1]);
-	        i++;
-	      } else if ("-raw".equals(args[i])) {
-	        raw = true;
-	      } else if ("-paging".equals(args[i])) {
-	        hitsPerPage = Integer.parseInt(args[i+1]);
-	        if (hitsPerPage <= 0) {
-	          System.err.println("There must be at least 1 hit per page.");
-	          System.exit(1);
-	        }
-	        i++;
 	      }
 	    }
 	    
@@ -114,7 +83,6 @@ public class SearchFiles {
 	    }
 	    
 	    /** Creation of the output file if does not exist **/
-	    File output_file = new File(output);
 	    
 	    System.out.println("PARSING XML INFONEEDS");
 	    
@@ -214,7 +182,7 @@ public class SearchFiles {
 	    	obj_q.setQuery(q);
 	    	
 	    	// TODO: replace by a for loop on all the queries of xml_query_file
-	    	results.add(doPagingSearch(in, searcher, obj_q, hitsPerPage, raw, queries == null && queryString == null));
+	    	results.add(doPagingSearch(in, searcher, obj_q, maxHits, raw, queries == null && queryString == null));
 	      
 	      //break;
 	      /*if (queryString != null) {
@@ -249,15 +217,15 @@ public class SearchFiles {
 	   * 
 	   */
 	  public static ArrayList<Results> doPagingSearch(BufferedReader in, IndexSearcher searcher, ObjectQuery obj_query, 
-	                                     int hitsPerPage, boolean raw, boolean interactive) throws IOException {
+	                                     int maxHits, boolean raw, boolean interactive) throws IOException {
 
 		  Query query = obj_query.query;
 		  // Collect enough docs to show 5 pages
-		  TopDocs results = searcher.search(query, 5 * hitsPerPage);
+		  TopDocs results = searcher.search(query, maxHits);
 		  ScoreDoc[] hits = results.scoreDocs;
 	    
 		  int numTotalHits = Math.toIntExact(results.totalHits.value);
-		  int end = Math.min(hits.length, 5 * hitsPerPage);
+		  int end = Math.min(hits.length, maxHits);
 		  System.out.println(numTotalHits + " total matching documents");
 	    
 		  ArrayList<Results> results_query = new ArrayList<Results>();
