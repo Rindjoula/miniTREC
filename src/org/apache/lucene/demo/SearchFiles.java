@@ -2,8 +2,10 @@ package org.apache.lucene.demo;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Paths;
 import java.text.Normalizer;
@@ -19,6 +21,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.CharArraySet;
+import org.apache.lucene.analysis.es.SpanishAnalyzer;
 import org.apache.lucene.demo.SpanishAnalyzer2;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
@@ -33,6 +37,7 @@ import org.apache.lucene.store.FSDirectory;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.util.Span;
+import opennlp.uima.namefind.NameFinder;
 
 public class SearchFiles {
 	private SearchFiles() {}
@@ -81,8 +86,6 @@ public class SearchFiles {
 	    	System.err.println("Must provide output file with -output");
 		    System.exit(1);
 	    }
-	    
-	    /** Creation of the output file if does not exist **/
 	    
 	    System.out.println("PARSING XML INFONEEDS");
 	    
@@ -168,9 +171,27 @@ public class SearchFiles {
 	    	
 	    	String[] text_list = text_query.split("\\s+|(?=\\p{Punct})|(?<=\\p{Punct})");
 	    	
+	    	CharArraySet stopSet = SpanishAnalyzer.getDefaultStopSet();
+	    	
+	    	String[] persons = ModelsOpenNLP.getNames(text_query, "es-ner-person.bin");
+	    	for (String person: persons) {
+	    		lucene_query += "(creator:" + person + " OR contributor:" + person
+	    				+ " OR description:" + person + " OR title:" + person
+	    				+ ") ";
+	    	}
+	    	
+	    	String[] miscs = ModelsOpenNLP.getNames(text_query, "es-ner-misc.bin");
+	    	for (String misc: miscs) {
+	    		lucene_query += "(title:" + misc + " OR subject:" + misc
+	    				+ " OR description:" + misc + ") ";
+	    	}
+	    	
+	    	    	
 	    	for (String word: text_list) {
-	    		if (word.matches("[a-z]+")) {
-	    			lucene_query += "description:" + word + " ";
+	    		if (word.matches("[a-z]+") && !stopSet.contains(word)) {
+	    			//lucene_query += "description:" + word + " ";
+	    			lucene_query += "subject:" + word + " ";
+	    			lucene_query += "title:" + word + " ";
 	    		}
 	    	}
 	    	
@@ -181,8 +202,7 @@ public class SearchFiles {
 	    	Query q = parser.parse(lucene_query);
 	    	obj_q.setQuery(q);
 	    	
-	    	// TODO: replace by a for loop on all the queries of xml_query_file
-	    	results.add(doPagingSearch(in, searcher, obj_q, maxHits, raw, queries == null && queryString == null));
+	    	results.add(doSearch(in, searcher, obj_q, maxHits, raw, queries == null && queryString == null));
 	      
 	      //break;
 	      /*if (queryString != null) {
@@ -216,7 +236,7 @@ public class SearchFiles {
 	   * 
 	   * 
 	   */
-	  public static ArrayList<Results> doPagingSearch(BufferedReader in, IndexSearcher searcher, ObjectQuery obj_query, 
+	  public static ArrayList<Results> doSearch(BufferedReader in, IndexSearcher searcher, ObjectQuery obj_query, 
 	                                     int maxHits, boolean raw, boolean interactive) throws IOException {
 
 		  Query query = obj_query.query;
