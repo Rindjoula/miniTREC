@@ -14,8 +14,6 @@ public class SpanishAnalyzer2 extends Analyzer {
 	protected TokenStreamComponents createComponents(String fieldName) {
 		final Tokenizer source = new StandardTokenizer();
 		CharArraySet stopSet = SpanishAnalyzer.getDefaultStopSet();
-		String[] listStopWords = {"desde", "que", "o"};
-		stopSet.add(listStopWords);
 		TokenStream filter1 = new StopFilter(source, stopSet);
 		TokenStream filter2 = new LowerCaseFilter(filter1);
 		filter2 = new SnowballFilter(filter2, "Spanish");

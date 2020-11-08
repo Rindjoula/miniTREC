@@ -42,11 +42,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 //import javax.xml.soap.Node;
 import org.w3c.dom.Node;
 
-/** Index all text files under a directory.
- * <p>
- * This is a command-line application demonstrating simple Lucene indexing.
- * Run it with no command-line arguments for usage information.
- */
+/** Index all text files under a directory.*/
 public class IndexFiles {
   
 private IndexFiles() {}
@@ -91,32 +87,10 @@ private IndexFiles() {}
 	      Analyzer analyzer = new SpanishAnalyzer2();
 	      IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
 
-	      if (create) {
-	        // Create a new index in the directory, removing any
-	        // previously indexed documents:
-	        iwc.setOpenMode(OpenMode.CREATE);
-	      } else {
-	        // Add new documents to an existing index:
-	        iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
-	      }
-
-	      // Optional: for better indexing performance, if you
-	      // are indexing many documents, increase the RAM
-	      // buffer.  But if you do this, increase the max heap
-	      // size to the JVM (eg add -Xmx512m or -Xmx1g):
-	      //
-	      // iwc.setRAMBufferSizeMB(256.0);
+	      iwc.setOpenMode(OpenMode.CREATE);
 
 	      IndexWriter writer = new IndexWriter(dir, iwc);
 	      indexDocs(writer, docDir);
-
-	      // NOTE: if you want to maximize search performance,
-	      // you can optionally call forceMerge here.  This can be
-	      // a terribly costly operation, so generally it's only
-	      // worth it when your index is relatively static (ie
-	      // you're done adding documents to it):
-	      //
-	      // writer.forceMerge(1);
 
 	      writer.close();
 
@@ -129,21 +103,6 @@ private IndexFiles() {}
 	    }
 	  }
 
-	  /**
-	   * Indexes the given file using the given writer, or if a directory is given,
-	   * recurses over files and directories found under the given directory.
-	   * 
-	   * NOTE: This method indexes one document per input file.  This is slow.  For good
-	   * throughput, put multiple documents into your input file(s).  An example of this is
-	   * in the benchmark module, which can create "line doc" files, one document per line,
-	   * using the
-	   * <a href="../../../../../contrib-benchmark/org/apache/lucene/benchmark/byTask/tasks/WriteLineDocTask.html"
-	   * >WriteLineDocTask</a>.
-	   *  
-	   * @param writer Writer to the index where the given file/dir info will be stored
-	   * @param file The file to index, or the directory to recurse into to find files to index
-	   * @throws IOException If there is a low-level I/O error
-	   */
 	  static void indexDocs(IndexWriter writer, File file)
 	    throws IOException {
 	    // do not try to index files that cannot be read
@@ -289,7 +248,6 @@ private IndexFiles() {}
 			          doc.add(southField);
 			          doc.add(northField);
 			          
-			          //System.out.println(west + " " + east + " " + south + " " + north);
 		          }
 		          
 		          if (writer.getConfig().getOpenMode() == OpenMode.CREATE) {

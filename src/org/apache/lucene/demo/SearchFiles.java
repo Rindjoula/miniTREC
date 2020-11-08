@@ -42,14 +42,7 @@ import opennlp.uima.namefind.NameFinder;
 public class SearchFiles {
 	private SearchFiles() {}
 
-	  /** Simple command-line based search demo. */
 	  public static void main(String[] args) throws Exception {
-	    String usage =
-	      "Usage:\tjava org.apache.lucene.demo.SearchFiles [-index dir] [-field f] [-repeat n] [-queries file] [-query string] [-raw] [-paging hitsPerPage]\n\nSee http://lucene.apache.org/core/4_1_0/demo/ for details.";
-	    if (args.length > 0 && ("-h".equals(args[0]) || "-help".equals(args[0]))) {
-	      System.out.println(usage);
-	      System.exit(0);
-	    }
 
 	    String index = "index";
 	    String field = "contents";
@@ -57,13 +50,10 @@ public class SearchFiles {
 	    String output = null;
 	    String queries = null;
 	    	    
-	    boolean raw = false;
 	    String queryString = null;
 	    int maxHits = 20; 
 	    
-	    BufferedReader in = new BufferedReader(new InputStreamReader(System.in, "UTF-8"));
-	    
-	    /** Parse all the parameters **/
+	    /** Parse all the parameters */
 	    for(int i = 0;i < args.length;i++) {
 	      if ("-index".equals(args[i])) {
 	        index = args[i+1];
@@ -87,6 +77,7 @@ public class SearchFiles {
 		    System.exit(1);
 	    }
 	    
+	    /** PARSING XML FILE INFONEEDS */
 	    System.out.println("PARSING XML INFONEEDS");
 	    
 	    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -99,31 +90,19 @@ public class SearchFiles {
         
         ArrayList<ObjectQuery> informationNeeds = new ArrayList<ObjectQuery> ();
         
-        
         for (int i = 0; i < nodeList.getLength(); i++) {
             Node node = nodeList.item(i);
 
             if (node.getNodeType() == Node.ELEMENT_NODE) {
                  Element elem = (Element) node;
-
-  
-                 // Get the value of all sub-elements.
                  String identifier = elem.getElementsByTagName("identifier")
                                      .item(0).getChildNodes().item(0).getNodeValue();
-
                  String text = elem.getElementsByTagName("text").item(0)
                                      .getChildNodes().item(0).getNodeValue();
-
-
                  System.out.println("ID: " + identifier + ", text: " + text);
-                 
                  informationNeeds.add(new ObjectQuery(identifier, text));
-                 
             }
         }
-        
-        // TODO: replace by the number of queries of the xml_query_file
-	    ArrayList<ArrayList<Results>> results = new ArrayList<ArrayList<Results>>();
         
 	    
 	    IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(index)));
@@ -131,12 +110,10 @@ public class SearchFiles {
 	    Analyzer analyzer = new SpanishAnalyzer2();
 
 	    QueryParser parser = new QueryParser(field, analyzer);
+	    
+	    ArrayList<ArrayList<Results>> results = new ArrayList<ArrayList<Results>>();
+	    
 	    for (ObjectQuery obj_q: informationNeeds) {
-	    	//System.out.println(query.toString());
-	      	      
-	    	// TODO: set the argument query of obj_q --> readable by lucene, after the transformations...
-	    	// Query q = ...
-	    	// obj_q.setQuery(q);
 	    	
 	    	String text_query = obj_q.text_query.toLowerCase();
 	    	text_query = Normalizer.normalize(text_query, Normalizer.Form.NFD);
@@ -166,9 +143,7 @@ public class SearchFiles {
 	    	if (numbers.size() == 2) {
 	    		lucene_query += "date:[" + numbers.get(0) + " TO " + numbers.get(1) + "] ";
 	    	}
-	    	
-	    	System.out.println(numbers);
-	    	
+	    		    	
 	    	String[] text_list = text_query.split("\\s+|(?=\\p{Punct})|(?<=\\p{Punct})");
 	    	
 	    	CharArraySet stopSet = SpanishAnalyzer.getDefaultStopSet();
@@ -189,28 +164,20 @@ public class SearchFiles {
 	    	    	
 	    	for (String word: text_list) {
 	    		if (word.matches("[a-z]+") && !stopSet.contains(word)) {
-	    			//lucene_query += "description:" + word + " ";
 	    			lucene_query += "subject:" + word + " ";
 	    			lucene_query += "title:" + word + " ";
 	    		}
 	    	}
-	    	
-	    	//lucene_query += "description:" + text_query + " ";
-	    	
-	    	System.out.println(lucene_query);
+	    		    	
+	    	//System.out.println(lucene_query);
 	    	
 	    	Query q = parser.parse(lucene_query);
 	    	obj_q.setQuery(q);
 	    	
-	    	results.add(doSearch(in, searcher, obj_q, maxHits, raw, queries == null && queryString == null));
-	      
-	      //break;
-	      /*if (queryString != null) {
-	        break;
-	      }*/
+	    	results.add(doSearch(searcher, obj_q, maxHits, queries == null && queryString == null));
 	    }
 	    
-	    /** Write on the result file all the results **/
+	    /** Write on the result file all the results */
 	    FileWriter writer = new FileWriter(output);
 	    for (ArrayList<Results> res: results) {
 	    	for (Results r: res) {
@@ -222,31 +189,18 @@ public class SearchFiles {
 	    	
 	    }
 	    writer.close();
-	    //reader.close();
 	  }
 
-	  /**
-	   * This demonstrates a typical paging search scenario, where the search engine presents 
-	   * pages of size n to the user. The user can then go to the next page if interested in
-	   * the next hits.
-	   * 
-	   * When the query is executed for the first time, then only enough results are collected
-	   * to fill 5 result pages. If the user wants to page beyond this limit, then the query
-	   * is executed another time and all hits are collected.
-	   * 
-	   * 
-	   */
-	  public static ArrayList<Results> doSearch(BufferedReader in, IndexSearcher searcher, ObjectQuery obj_query, 
-	                                     int maxHits, boolean raw, boolean interactive) throws IOException {
+	  public static ArrayList<Results> doSearch(IndexSearcher searcher, ObjectQuery obj_query, 
+	                                     int maxHits, boolean interactive) throws IOException {
 
 		  Query query = obj_query.query;
-		  // Collect enough docs to show 5 pages
 		  TopDocs results = searcher.search(query, maxHits);
 		  ScoreDoc[] hits = results.scoreDocs;
-	    
-		  int numTotalHits = Math.toIntExact(results.totalHits.value);
+		  
 		  int end = Math.min(hits.length, maxHits);
-		  System.out.println(numTotalHits + " total matching documents");
+		  //int numTotalHits = Math.toIntExact(results.totalHits.value);
+		  //System.out.println(numTotalHits + " total matching documents");
 	    
 		  ArrayList<Results> results_query = new ArrayList<Results>();
 	    
@@ -260,7 +214,7 @@ public class SearchFiles {
 		    	  results_query.add(r);
 		      }
 	        
-		      // explaining results
+		      /** Explaining results */
 		      //System.out.println(searcher.explain(query, hits[i].doc));
 	                  
 	      }
