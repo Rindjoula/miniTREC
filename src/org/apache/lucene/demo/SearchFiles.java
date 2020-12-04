@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.Normalizer;
 import java.util.ArrayList;
@@ -51,7 +52,7 @@ public class SearchFiles {
 	    String queries = null;
 	    	    
 	    String queryString = null;
-	    int maxHits = 20; 
+	    int maxHits = 45; 
 	    
 	    /** Parse all the parameters */
 	    for(int i = 0;i < args.length;i++) {
@@ -181,8 +182,10 @@ public class SearchFiles {
 	    FileWriter writer = new FileWriter(output);
 	    for (ArrayList<Results> res: results) {
 	    	for (Results r: res) {
+	    		Path p = Paths.get(r.id_doc);
+	    		String doc = p.getFileName().toString();
 	    		String file_result = r.id_query + "\t" 
-	    				+ r.id_doc;
+	    				+ doc;
 	    		writer.write(file_result);
 	    		writer.write("\n");
 	    	}
