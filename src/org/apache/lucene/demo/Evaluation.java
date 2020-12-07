@@ -106,7 +106,17 @@ public class Evaluation {
 		
 		br.close();
 		
+		int number_queries = qrels_list.size();
+		
 		PrintWriter writer = new PrintWriter(output, "UTF-8");
+		double[] precisions = new double[number_queries];
+		double[] recalls = new double[number_queries];
+		double[] f1s = new double[number_queries];
+		double[] precision_10_tab = new double[number_queries];
+		
+		int z = 0;
+		
+		HashMap<String, ArrayList<Double>> info_precisions_list = new HashMap<String, ArrayList<Double>>(); 
 		
 		for(String info_id: qrels_list.keySet()) {
 			int tp = 0;
@@ -122,8 +132,8 @@ public class Evaluation {
 			// count the number of docs in qrels
 			int count_docs = 0;
 			
-			ArrayList<Double> precisions_list = new ArrayList<Double>(); 
 			HashMap<Double, Double> prec_recall_list = new HashMap<Double, Double>();
+			ArrayList<Double> precisions_list = new ArrayList<Double>();
 			
 			for(HashMap<String, Integer> docrel: tmp_list) {
 				
@@ -162,8 +172,11 @@ public class Evaluation {
 			int total_docs_rel = tp + fn;
 			
 			double precision = (double)tp/(tp+fp);
+			precisions[z] = precision;
 			double recall = (double)tp/(tp+fn);
+			recalls[z] = recall;
 			double f1 = 2*(double)precision*recall / (precision+recall);
+			f1s[z] = f1;
 			
 			System.out.println("tp = " + tp + "\tfp = " + fp + "\tfn = " + fn);
 			
@@ -175,6 +188,7 @@ public class Evaluation {
 			writer.println("F1\t" + String.format("%.3f", f1));
 			
 			double precision_10 = (double)tp_10/(tp_10+fp_10);
+			precision_10_tab[z] = precision_10;
 			System.out.println("prec@10\t" + String.format("%.3f", precision_10));
 			writer.println("prec@10\t" + String.format("%.3f", precision_10));
 			
@@ -185,6 +199,7 @@ public class Evaluation {
 			writer.println("recall_precision");
 			System.out.println("recall_precision");
 			double k = (double)1 / total_docs_rel; 
+			
 			for (int i=0; i<precisions_list.size(); i++) {
 				double r = (double)(i+1)*k;
 				double pr = precisions_list.get(i);
@@ -212,6 +227,53 @@ public class Evaluation {
 			}
 			
 			writer.println();
+			z++;
+			
+			info_precisions_list.put(info_id, precisions_list);
+		}
+		
+		writer.println("TOTAL");
+		double global_precision = 0;
+		double global_recall = 0;
+		double global_f1 = 0;
+		double global_prec10 = 0;
+				
+		for (int i=0; i<number_queries; i++) {
+			global_precision += precisions[i];
+			global_recall += recalls[i];
+			global_f1 += f1s[i];
+			global_prec10 += precision_10_tab[i];
+		}
+		
+		global_precision /= number_queries;
+		global_recall /= number_queries;
+		global_f1 /= number_queries;
+		global_prec10 /= number_queries;
+			
+		writer.println("precision\t" + global_precision);
+		writer.println("recall\t" + global_recall);
+		writer.println("F1\t" + global_f1);
+		writer.println("prec@10\t" + global_prec10);
+		
+		/* Compute MAP */
+		
+		writer.println("interpolated_recall_precision");
+		
+		/* Compute all the interpolated recall precisions */
+		
+		Double[] global_inter_rec_prec = new Double[10];
+		for (String info_id: qrels_list.keySet()) {
+			ArrayList<Double> list_prec = info_precisions_list.get(info_id);
+			System.out.println("HERE:" + list_prec);
+			for (int i=0; i<list_prec.size(); i++) {
+				global_inter_rec_prec[i] += list_prec.get(i);
+			}
+		}
+		
+		for (int i=0; i<10; i++) {
+			double r = (double) i / 10; 
+			double pr = global_inter_rec_prec[i] / number_queries;
+			writer.println(String.format("%.3f", r) + "\t" + String.format("%.3f", pr));
 		}
 			 
 		writer.close();
