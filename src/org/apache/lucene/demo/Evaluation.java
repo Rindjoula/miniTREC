@@ -58,12 +58,9 @@ public class Evaluation {
 		String line;
 		while((line = br.readLine()) != null) {
 			String[] split_line = line.split("\t");
-			//System.out.println(line);
 			String id_info = split_line[0];
 			String doc_id = split_line[1];
 			int rel = Integer.parseInt(split_line[2]);
-			//System.out.println(id);
-			//System.out.println(rel);
 			if (!qrels_list.containsKey(id_info)) {
 				qrels_list.put(id_info, 
 						new ArrayList<HashMap<String, Integer>>());
@@ -77,11 +74,7 @@ public class Evaluation {
 			qrels_list.replace(id_info, tmp);
 		}
 		 
-		//System.out.println(qrels_list.get(1));
-		//System.out.println(qrels_list.get(2));
-		 
 		br.close();
-		 
 		
 		// Reading the results file of our system (results.txt)
 		ArrayList<HashMap<String, String>> results_list = new ArrayList<HashMap<String, String>>();
@@ -101,9 +94,7 @@ public class Evaluation {
 			tmp.put(info_id, doc_id);
 			results_list.add(tmp);
 		}
-		 
-		//System.out.println(results_list);
-		
+				
 		br.close();
 		
 		int number_queries = qrels_list.size();
@@ -116,7 +107,8 @@ public class Evaluation {
 		
 		int z = 0;
 		
-		HashMap<String, ArrayList<Double>> info_precisions_list = new HashMap<String, ArrayList<Double>>(); 
+		HashMap<String, ArrayList<Double>> info_precisions_list = new HashMap<String, ArrayList<Double>>();
+		HashMap<String, ArrayList<Double>> info_all_precisions_list = new HashMap<String, ArrayList<Double>>();
 		
 		for(String info_id: qrels_list.keySet()) {
 			int tp = 0;
@@ -134,6 +126,8 @@ public class Evaluation {
 			
 			HashMap<Double, Double> prec_recall_list = new HashMap<Double, Double>();
 			ArrayList<Double> precisions_list = new ArrayList<Double>();
+			ArrayList<Double> inter_rec_prec = new ArrayList<Double>();
+			ArrayList<Double> all_precisions_list = new ArrayList<Double>();
 			
 			for(HashMap<String, Integer> docrel: tmp_list) {
 				
@@ -154,11 +148,13 @@ public class Evaluation {
 						tp++;
 						map += (double)tp/count_docs;
 						precisions_list.add((double)(tp)/count_docs);
+						all_precisions_list.add((double)(tp)/count_docs);
 					}
 					
 					// if the doc is in the results_list but is not relevant in qrels.txt
 					if (docrel.get(doc_id) == 0 && results_list.contains(k)) {
 						fp++;
+						all_precisions_list.add((double)(tp)/count_docs);
 					}
 					
 					// if the doc is not in the results_list but it is relevant in qrels.txt
@@ -168,6 +164,8 @@ public class Evaluation {
 				}
 				
 			}
+						
+			info_all_precisions_list.put(info_id, all_precisions_list);
 			
 			int total_docs_rel = tp + fn;
 			
@@ -177,43 +175,37 @@ public class Evaluation {
 			recalls[z] = recall;
 			double f1 = 2*(double)precision*recall / (precision+recall);
 			f1s[z] = f1;
-			
-			System.out.println("tp = " + tp + "\tfp = " + fp + "\tfn = " + fn);
-			
-			System.out.println("PRECISION = " + String.format("%.3f", precision) + "\tRECALL = " + String.format("%.3f", recall));
+						
 			writer.println("precision\t" + String.format("%.3f", precision));
 			writer.println("recall\t" + String.format("%.3f", recall));
 			
-			System.out.println("F1\t" + String.format("%.3f", f1));
 			writer.println("F1\t" + String.format("%.3f", f1));
 			
-			double precision_10 = (double)tp_10/(tp_10+fp_10);
+			double precision_10;
+			if (tp_10 + fp_10 == 0) {
+				precision_10 = 0;
+			}
+			else {
+				precision_10 = (double)tp_10/(tp_10+fp_10);
+			}
 			precision_10_tab[z] = precision_10;
-			System.out.println("prec@10\t" + String.format("%.3f", precision_10));
 			writer.println("prec@10\t" + String.format("%.3f", precision_10));
 			
 			map /= tp;			
-			System.out.println("average_precision\t" + String.format("%.3f", map));
 			writer.println("average_precision\t" + String.format("%.3f", map));
 			
 			writer.println("recall_precision");
-			System.out.println("recall_precision");
 			double k = (double)1 / total_docs_rel; 
 			
 			for (int i=0; i<precisions_list.size(); i++) {
 				double r = (double)(i+1)*k;
 				double pr = precisions_list.get(i);
-				System.out.println(String.format("%.3f", r) + "\t" + String.format("%.3f", pr));
 				writer.println(String.format("%.3f", r) + "\t" + String.format("%.3f", pr));
 				
 				prec_recall_list.put(r, pr);
 			}
-			
-			//System.out.println(precisions_list);
-			System.out.println(prec_recall_list);
-			
+						
 			writer.println("interpolated_recall_precision");
-			System.out.println("interpolated_recall_precision");
 			for (int i=0; i<=10; i++) {
 				double r = (double) i / 10;
 				double max = 0;
@@ -222,22 +214,24 @@ public class Evaluation {
 						max = prec_recall_list.get(rec);
 					}
 				}
-				System.out.println(r + "\t" + String.format("%.3f", max));
 				writer.println(r + "\t" + String.format("%.3f", max));
+				
+				inter_rec_prec.add(max);
+				
 			}
 			
 			writer.println();
 			z++;
 			
-			info_precisions_list.put(info_id, precisions_list);
+			info_precisions_list.put(info_id, inter_rec_prec);
 		}
-		
+				
 		writer.println("TOTAL");
 		double global_precision = 0;
 		double global_recall = 0;
 		double global_f1 = 0;
 		double global_prec10 = 0;
-				
+						
 		for (int i=0; i<number_queries; i++) {
 			global_precision += precisions[i];
 			global_recall += recalls[i];
@@ -256,15 +250,30 @@ public class Evaluation {
 		writer.println("prec@10\t" + global_prec10);
 		
 		/* Compute MAP */
+		double map = 0.0;
+		for (String info_id: info_all_precisions_list.keySet()) {
+			double tmp = 0.0;
+			for (int j=0; j<info_all_precisions_list.get(info_id).size(); j++) {
+				tmp += info_all_precisions_list.get(info_id).get(j);
+			}
+			tmp /= info_all_precisions_list.get(info_id).size();
+			System.out.println(tmp);
+			map += tmp;
+		}
+		 map /= number_queries;
 		
+		 writer.println("MAP\t" + String.format("%.3f", map));
+		 
 		writer.println("interpolated_recall_precision");
 		
 		/* Compute all the interpolated recall precisions */
 		
-		Double[] global_inter_rec_prec = new Double[10];
+		Double[] global_inter_rec_prec = new Double[11];
+		for (int i=0; i<11; i++) {
+			global_inter_rec_prec[i] = 0.0;
+		}
 		for (String info_id: qrels_list.keySet()) {
 			ArrayList<Double> list_prec = info_precisions_list.get(info_id);
-			System.out.println("HERE:" + list_prec);
 			for (int i=0; i<list_prec.size(); i++) {
 				global_inter_rec_prec[i] += list_prec.get(i);
 			}
