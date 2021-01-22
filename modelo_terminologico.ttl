@@ -4,7 +4,7 @@
 
 # modelo terminológico
 
-modelo:espanya		rfd:type		skos:Concept;
+modelo:espanya		rdf:type		skos:Concept;
 					skos:prefLabel 	"España"@es.
 
 modelo:huesca		rdf:type		skos:Concept;
@@ -17,7 +17,7 @@ modelo:politica		rdf:type		skos:Concept;
 modelo:guerraCivil	rdf:type		skos:Concept;
 					skos:prefLabel 	"guerra civil"@es.
 					
-modelo:dictadura	rfd:type		skos:Concept;
+modelo:dictadura	rdf:type		skos:Concept;
 					skos:prefLabel 	"dictadura"@es;
 					skos:altLabel 	"caciquismo"@es;
 					skos:related	modelo:politica;
@@ -34,7 +34,7 @@ modelo:biomedica	rdf:type		skos:Concept;
 
 modelo:enfermedad	rdf:type	skos:Concept;
 					skos:prefLabel		"enfermedad"@es;
-					skos:altLabel		"patología"@es;
+					skos:altLabel		"patología"@es.
 
 modelo:enfermedadNeuro	rdf:type	skos:Concept;
 					skos:prefLabel	"enfermedad neurodegenerativa"@es;

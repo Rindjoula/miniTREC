@@ -43,7 +43,7 @@ modelo:description	rdf:type	rdf:property;
 				
 modelo:publisher	rdf:type	rdf:property;
 					rdfs:Domain	modelo:Document;
-					rdfs:range	foaf:Agent.
+					rdfs:range	rdfs:Literal.
 				
 modelo:date		rdf:type		rdf:property;
 				rdfs:Domain		modelo:Document;
@@ -60,10 +60,6 @@ modelo:language	rdf:type	rdf:property;
 modelo:relation	rdf:type	rdf:property;
 				rdfs:Domain	modelo:Document;
 				rdfs:range	dcterms:URI.
-			
-modelo:identifier	rdf:type	rdf:property;
-					rdfs:Domain	modelo:Document;
-					rdfs:range	dcterms:URI.
 				
 modelo:rights	rdf:type	rdf:property;
 				rdfs:Domain	modelo:Document;
