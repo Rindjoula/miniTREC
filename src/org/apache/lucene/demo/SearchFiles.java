@@ -35,11 +35,6 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
 
-import opennlp.tools.namefind.NameFinderME;
-import opennlp.tools.namefind.TokenNameFinderModel;
-import opennlp.tools.util.Span;
-import opennlp.uima.namefind.NameFinder;
-
 public class SearchFiles {
 	private SearchFiles() {}
 
@@ -148,19 +143,6 @@ public class SearchFiles {
 	    	String[] text_list = text_query.split("\\s+|(?=\\p{Punct})|(?<=\\p{Punct})");
 	    	
 	    	CharArraySet stopSet = SpanishAnalyzer.getDefaultStopSet();
-	    	
-	    	String[] persons = ModelsOpenNLP.getNames(text_query, "es-ner-person.bin");
-	    	for (String person: persons) {
-	    		lucene_query += "(creator:" + person + " OR contributor:" + person
-	    				+ " OR description:" + person + " OR title:" + person
-	    				+ ") ";
-	    	}
-	    	
-	    	String[] miscs = ModelsOpenNLP.getNames(text_query, "es-ner-misc.bin");
-	    	for (String misc: miscs) {
-	    		lucene_query += "(title:" + misc + " OR subject:" + misc
-	    				+ " OR description:" + misc + ") ";
-	    	}
 	    	
 	    	    	
 	    	for (String word: text_list) {

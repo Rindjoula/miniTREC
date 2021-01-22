@@ -228,6 +228,7 @@ private IndexFiles() {}
 		        	  doc.add(new StringField("date", date, Field.Store.YES));
 		          }
 		          
+		          
 		          String lowerCorner = doc.get("ows:LowerCorner");
 		          String upperCorner = doc.get("ows:UpperCorner");
 	
@@ -249,6 +250,8 @@ private IndexFiles() {}
 			          doc.add(northField);
 			          
 		          }
+		          
+		          
 		          
 		          if (writer.getConfig().getOpenMode() == OpenMode.CREATE) {
 		            // New index, so we just add the document (no old document can be there):
