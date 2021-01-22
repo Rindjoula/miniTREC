@@ -1,0 +1,84 @@
+@prefix modelo:     <http://www.example.org/#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> 
+
+# modelo terminológico
+
+modelo:espanya		rfd:type		skos:Concept;
+					skos:prefLabel 	"España"@es.
+
+modelo:huesca		rdf:type		skos:Concept;
+					skos:broader	modelo:espanya;
+					skos:prefLabel 	"Huesca"@es.
+					
+modelo:politica		rdf:type		skos:Concept;
+					skos:prefLabel 	"política"@es.
+
+modelo:guerraCivil	rdf:type		skos:Concept;
+					skos:prefLabel 	"guerra civil"@es.
+					
+modelo:dictadura	rfd:type		skos:Concept;
+					skos:prefLabel 	"dictadura"@es;
+					skos:altLabel 	"caciquismo"@es;
+					skos:related	modelo:politica;
+					skos:related	modelo:guerraCivil.
+
+modelo:franquismo	rdf:type		skos:Concept;
+					skos:prefLabel		"franquismo"@es; 
+					skos:related		modelo:guerraCivil;
+					skos:related		modelo:dictadura.
+
+modelo:biomedica	rdf:type		skos:Concept;
+					skos:prefLabel 	"biomédica"@es;
+					skos:altLabel 	"Ingenieria Biomédica"@es.
+
+modelo:enfermedad	rdf:type	skos:Concept;
+					skos:prefLabel		"enfermedad"@es;
+					skos:altLabel		"patología"@es;
+
+modelo:enfermedadNeuro	rdf:type	skos:Concept;
+					skos:prefLabel	"enfermedad neurodegenerativa"@es;
+					skos:altLabel 	"enfermedades neurodegenerativas"@es;
+					skos:altLabel 	"demencia neurodegenerativa"@es;
+					skos:altLabel	"patología neurodegenerativa"@es;
+					skos:broader		modelo:enfermedad.
+
+modelo:alzheimer	rdf:type		skos:Concept;
+					skos:broader	modelo:enfermedadNeuro;
+					skos:prefLabel 	"alzheimer"@es.
+					
+modelo:parkinson	rdf:type		skos:Concept;
+					skos:broader	modelo:enfermedadNeuro;
+					skos:prefLabel 	"parkinson"@es.
+
+modelo:economia		rdf:type		skos:Concept;
+					skos:prefLabel 	"economía"@es.
+					
+modelo:crisis		rdf:type		skos:Concept;
+					skos:prefLabel 	"crisis económica"@es;
+					skos:altLabel		"recesión económica"@es;
+					skos:related	modelo:economia.
+
+modelo:partidoPolitico	rdf:type	skos:Concept;
+					skos:prefLabel	"partido político"@es;
+					skos:altLabel 	"partidos políticos"@es;
+					skos:related	modelo:politica.
+					
+modelo:informatica	rdf:type		skos:Concept;
+					skos:prefLabel	"informática"@es;
+					skos:prefLabel 	"computer science"@en.
+					
+modelo:biologia 	rdf:type	skos:Concept;
+					skos:prefLabel "biología"@es.
+					
+modelo:bioinformatica	rdf:type	skos:Concept;
+					skos:prefLabel	"bioinformática"@es;
+					skos:altLabel 	"Biología Computacional"@es;
+					skos:prefLabel	"bioinformatics"@en;
+					skos:altLabel 	"Computational Biology"@en;
+					skos:broader	modelo:informatica;
+					skos:broader	modelo:biologia.
+
+modelo:filogenetica	rdf:type		skos:Concept;
+					skos:prefLabel	"filogenética"@es;
+					skos:prefLabel 	"phylogenetics"@en.
