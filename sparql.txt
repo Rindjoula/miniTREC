@@ -35,26 +35,17 @@ SELECT DISTINCT ?x WHERE{
 
 107-2 Análisis de la evolucion económica de España desde la crisis de 2008 hasta 2019 en relacion con los diferentes partidos politicos que han gobernado el país durante este periodo o con cualquier otro aspecto de relevancia social.
 
+107-2 prefix modelo: <http://www.example.org/#> SELECT DISTINCT ?x WHERE {{?x a modelo:tfg} UNION {?x a modelo:tfm} UNION {?x a modelo:tesis}  UNION {?x a modelo:pfc}. {?x modelo:title ?content} UNION {?x modelo:description ?content}. FILTER regex(?content, "economia|crisis económica|evolucion económica"). FILTER regex(?content, "partido político|partidos políticos"). OPTIONAL {FILTER regex(?content, "2008|2019|societal|sociedad")}} LIMIT 50
+
 prefix modelo: <http://www.example.org/#>
 SELECT DISTINCT ?x WHERE {
 	{?x a modelo:tfg} UNION {?x a modelo:tfm} UNION {?x a modelo:tesis}  UNION {?x a modelo:pfc}.
 	{?x modelo:title ?content} UNION {?x modelo:description ?content}.
 	FILTER regex(?content, "economia|crisis económica|evolucion económica").
-	FILTER regex(?content, "partido político|partidos políticos|sociedad").
+	FILTER regex(?content, "partido político|partidos políticos").
+	OPTIONAL {FILTER regex(?content, "2008|2019|societal|sociedad")}
 
 } LIMIT 50
-
-107-2 prefix modelo: <http://www.example.org/#> SELECT DISTINCT ?x WHERE {{?x a modelo:tfg} UNION {?x a modelo:tfm} UNION {?x a modelo:tesis}  UNION {?x a modelo:pfc}. {?x modelo:title ?content} UNION {?x modelo:description ?content}. FILTER regex(?content, "economia|crisis económica|evolucion económica"). FILTER regex(?content, "partido político|partidos políticos|sociedad").} LIMIT 50
-
-
-
-
-
-
-
-
-
-
 
 
 
