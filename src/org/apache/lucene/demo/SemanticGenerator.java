@@ -50,10 +50,12 @@ import org.apache.jena.rdf.model.InfModel;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.reasoner.Reasoner;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.util.FileManager;
 import org.apache.jena.vocabulary.SKOS; 
-import org.apache.jena.vocabulary.DCTerms; 
+import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.ReasonerVocabulary;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 
@@ -68,7 +70,7 @@ private SemanticGenerator() {}
 	 * @throws IOException */
 	  public static void main(String[] args) throws IOException {
 	    String usage = "java org.apache.lucene.demo.IndexFiles"
-	                 + " [-rdf RDF_PATH] [-skos SKOS_PATH] [-owl OWL_PATH -docs DOCS_PATH]\n\n";
+	                 + " [-rdf RDF_PATH] [-skos SKOS_PATH] [-owl OWL_PATH] [-docs DOCS_PATH]\n\n";
 	                 
 	    String rdfPath = null;
 	    String skosPath = null;
@@ -130,7 +132,12 @@ private SemanticGenerator() {}
 		  Model union1 = ModelFactory.createUnion(rdfModel, owlModel);
 		  Model union = ModelFactory.createUnion(union1, skosModel);
 		  
-		  PrintWriter out_file = new PrintWriter(new FileWriter(rdfPath));
+		  /*Reasoner reasoner = PelletReasonerFactory.theInstance().create();
+		  reasoner.setParameter(ReasonerVocabulary.PROPsetRDFSLevel, ReasonerVocabulary.RDFS_SIMPLE);
+		  
+		  Model inferMod = ModelFactory.createInfModel(reasoner, union);*/
+		  
+		  PrintWriter out_file = new PrintWriter(rdfPath);
 		  
 		  union.write(out_file, "TURTLE");
 		  
