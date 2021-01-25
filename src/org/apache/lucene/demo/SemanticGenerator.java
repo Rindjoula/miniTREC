@@ -17,28 +17,16 @@ package org.apache.lucene.demo;
  * limitations under the License.
  */
 
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
+
 import org.apache.lucene.document.*;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig.OpenMode;
-import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
 import org.w3c.dom.NodeList;
 
 import openllet.jena.PelletReasonerFactory;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.nio.file.Paths;
 import java.util.Date;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -119,8 +107,8 @@ private SemanticGenerator() {}
 	    end = new Date();
 	    System.out.println(end.getTime() - start.getTime() + " total milliseconds");
 	    
-	    File tmp = new File("tmp.ttl");
-	    tmp.delete();
+	    //File tmp = new File("tmp.ttl");
+	    //tmp.delete();
 
 	  }
 	  
@@ -133,13 +121,13 @@ private SemanticGenerator() {}
 		  Model union = ModelFactory.createUnion(union1, skosModel);
 		  
 		  /*Reasoner reasoner = PelletReasonerFactory.theInstance().create();
-		  reasoner.setParameter(ReasonerVocabulary.PROPsetRDFSLevel, ReasonerVocabulary.RDFS_SIMPLE);
+		  reasoner.setParameter(ReasonerVocabulary.PROPsetRDFSLevel, ReasonerVocabulary.RDFS_SIMPLE);*/
 		  
-		  Model inferMod = ModelFactory.createInfModel(reasoner, union);*/
+		  InfModel inferMod = ModelFactory.createRDFSModel(union);
 		  
 		  PrintWriter out_file = new PrintWriter(rdfPath);
 		  
-		  union.write(out_file, "TURTLE");
+		  inferMod.write(out_file, "TURTLE");
 		  
 	  }
 
